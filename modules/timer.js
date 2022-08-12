@@ -35,21 +35,6 @@ export const timer = deadline => {
 
     return {timeRemainig, days, minutes, hours, secondes};
   };
-  const createSecondes = () => {
-    const timerDiv = document.querySelector('.timer');
-    const sec = document.createElement('p');
-    sec.classList.add('timer__item', 'timer__item_secondes');
-    sec.setAttribute('style', 'display:none');
-    const spanCounts = document.createElement('span');
-    spanCounts.classList.add('timer__count', 'timer__count_secondes');
-    const spanUnits = document.createElement('span');
-    spanUnits.classList.add('timer__units', 'timer__units_secondes');
-
-    sec.append(spanCounts, spanUnits);
-    timerDiv.append(sec);
-    return {sec, spanCounts, spanUnits};
-  };
-  const {sec, spanCounts, spanUnits} = createSecondes();
 
   const start = () => {
     const timer = getTimeRemaining();
@@ -62,16 +47,7 @@ export const timer = deadline => {
     if (timer.minutes < 10) {
       timerMinutes.textContent = `0${timer.minutes}`;
     } else timerMinutes.textContent = timer.minutes;
-    if (timer.secondes < 10) {
-      spanCounts.textContent = `0${timer.secondes}`;
-    } else spanCounts.textContent = timer.secondes;
-    if (timer.days === 0) {
-      const timerDiv = document.querySelector('.timer');
-      timerDiv.setAttribute('style', 'background-color:green');
-      const days = timerDiv.querySelector('.timer__item_days');
-      days.setAttribute('style', 'display:none');
-      sec.toggleAttribute('style');
-    }
+
 
     const dayText = numWord(timer.days, ['день', 'дня', 'дней']);
     textDays.textContent = dayText;
@@ -81,10 +57,6 @@ export const timer = deadline => {
 
     const minutesText = numWord(timer.minutes, ['минута', 'минуты', 'минут']);
     textMinutes.textContent = minutesText;
-
-    const secondesText = numWord(
-      timer.secondes, ['секунда', 'секунды', 'секунд']);
-    spanUnits.textContent = secondesText;
 
 
     const interbalId = setTimeout(start, 1000);
