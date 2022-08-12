@@ -6,6 +6,6 @@ const getTimer = () => {
 
 export const setDataDedline = () => {
   const timerDiv = getTimer();
-  timerDiv.setAttribute('data-deadline', '2022/08/12 15:40');
+  timerDiv.setAttribute('data-deadline', '2022/08/22 15:40');
   return timerDiv;
 };
