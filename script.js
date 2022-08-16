@@ -2,6 +2,7 @@ import {setDataDedline} from './modules/setDataDedline.js';
 import {timer} from './modules/timer.js';
 import './modules/acc.js';
 import './modules/burger.js';
+import './modules/fly.js';
 
 const init = () => {
   const datadeadline = setDataDedline();
