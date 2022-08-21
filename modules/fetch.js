@@ -1,5 +1,63 @@
 const URL = '/db.json';
 
+const getOverlay = () => {
+  const overlay = document.createElement('div');
+  overlay.classList.add('overlay');
+  overlay.style.cssText = `
+  display: none;
+  position: fixed;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  overflow: auto;
+  background: rgba(175, 175, 175, 1);
+  `;
+  return overlay;
+};
+const getModal = () => {
+  const modal = document.createElement('div');
+  modal.classList.add('modal__overlay', 'modal');
+  modal.style.cssText = `
+  box-sizing: border-box;
+  width: 980px;
+  height: 495px;
+  background: #FFFFFF;
+  border: 1px solid #AFAFAF;
+  border-radius: 30px;
+  align-items: center;
+  justify-content: center;
+  `;
+  const h2 = document.createElement('h2');
+  h2.style.cssText = `
+  font-weight: 400;
+font-size: 34px;
+line-height: 150%;
+text-align: center;
+padding-top: 77px;
+margin-bottom: 40px;`;
+  const p = document.createElement('p');
+  p.style.cssText = `
+  font-size: 18px;
+line-height: 150%;
+margin-bottom: 64px;
+text-align: center;
+  `;
+  const button = document.createElement('button');
+  button.classList.add('button');
+  button.style.cssText = `
+  width: 360px;
+  height: 76px;
+  border-radius: 12px;
+  margin: 0px 310px;
+  `;
+  modal.append(h2, p, button);
+
+  return {modal, h2, p, button};
+};
+
 const select = document.querySelector('#tour__date');
 const dateOption = select.querySelectorAll('.tour__option');
 dateOption.forEach(item => {
@@ -223,8 +281,8 @@ export const sendReservForm = () => {
     document.getElementById('reservation__date').value;
     const reservPeople =
     document.getElementById('reservation__people').value;
-    const reservName =
-    document.getElementById('reservation__name').value;
+    const overlay = getOverlay();
+    const {modal, h2, button, p} = getModal();
     fetchRequest('https://jsonplaceholder.typicode.com/posts', {
       method: 'POST',
       body: {
@@ -234,11 +292,25 @@ export const sendReservForm = () => {
       callback(error, data) {
         if (error) {
           console.warn(error, data);
-          reservationForm.textContent = 'Что-то пошло не так';
+          h2.textContent = 'Упс... что-то пошло не так';
+          p.textContent =
+          'Не удалось отправить заявку. Пожалуйста, повторите отправку еще раз';
+          button.textContent = 'Забронировать';
+          overlay.style.display = 'flex';
+          overlay.append(modal);
+          document.body.append(overlay);
         } else {
-          reservationForm.textContent =
-        `Заявка на ${reservDate} от ${reservName} 
-        принята. С вами свяжутся наши операторы`;
+          h2.textContent = 'Ваша заявка успешно отправлена';
+          p.textContent =
+          'Наши менеджеры свяжутся с вами в течении 3-х рабочих дней';
+          button.style.cssText = `
+          background: url('/img/Okok.svg') center/contain no-repeat;
+          width: 100px;
+          height: 100px;
+          margin: 0px 440px;`;
+          overlay.style.display = 'flex';
+          overlay.append(modal);
+          document.body.append(overlay);
         }
       },
       headers: {
