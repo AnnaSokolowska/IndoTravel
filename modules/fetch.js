@@ -32,9 +32,10 @@ personReservation.forEach(item => {
   item.remove();
 });
 
-
+const tourForm = document.querySelector('.tour__form');
 const reservationForm = document.querySelector('.reservation__form');
-console.log(reservationForm);
+const footerForm = document.querySelector('.footer__form');
+
 
 const numWord = (value, words) => {
   value = Math.abs(value) % 100;
@@ -57,9 +58,9 @@ const fetchRequest = async (url, {
     if (body) options.body = JSON.stringify(body);
     if (headers) options.headers = headers;
 
-    const response = await fetch(URL, options);
+    const response = await fetch(url, options);
 
-    if (response.status < 200 || response.status >= 300) {
+    if (response.ok) {
       const data = await response.json();
       if (callback) callback(null, data);
       return;
@@ -71,14 +72,10 @@ const fetchRequest = async (url, {
   }
 };
 
-
-export const renderTours = (err, data) => {
+const renderTours = (err, data) => {
   if (err) {
     console.warn(err, data);
-    const h2 = document.createElement('h2');
-    h2.style.color = 'red';
-    h2.textContent = err;
-    document.body.append(h2);
+    tourForm.textContent = 'Что -то пошло не так, попробуйте еще раз';
     return;
   }
   const dates = data.map(item => {
@@ -93,6 +90,12 @@ export const renderTours = (err, data) => {
 
 export const choose = () => {
   select.addEventListener('click', () => {
+    const dateOption = select.querySelectorAll('.tour__option');
+    dateOption.forEach(item => {
+      if (item.value !== '') {
+        item.remove();
+      }
+    });
     fetchRequest(URL, {
       method: 'get',
       callback: renderTours,
@@ -101,8 +104,22 @@ export const choose = () => {
 };
 
 
-export const renderReservTours = async () => {
-  const data = await loadTours();
+const renderReservTours = async (err, data) => {
+  if (err) {
+    console.warn(err, data);
+    const h2 = document.createElement('h2');
+    h2.style.color = 'red';
+    h2.textContent = err;
+    reservationForm.textContent = err;
+    return;
+  }
+  const dateReservation = reservationSelect.
+    querySelectorAll('.reservation__option');
+  dateReservation.forEach(item => {
+    if (item.value !== '') {
+      item.remove();
+    }
+  });
   const dates = data.map(item => {
     const tourOption = document.createElement('option');
     tourOption.classList.add('tour__option', 'reservation__option');
@@ -113,112 +130,179 @@ export const renderReservTours = async () => {
   reservationSelect.append(...dates);
 };
 
-export const renderPersons = async () => {
-  const data = await loadTours();
+export const reservChoose = () => {
+  reservationSelect.addEventListener('click', () => {
+    fetchRequest(URL, {
+      method: 'get',
+      callback: renderReservTours,
+    });
+  });
+};
+
+export const renderPersons = async (err, data) => {
+  if (err) {
+    console.warn(err, data);
+    tourForm.textContent = 'Что -то пошло не так, попробуйте еще раз';
+    return;
+  }
+  const tourDates = document.getElementById('tour__date').value;
+  const persons = [];
+  data.forEach(item => {
+    if (item.date === tourDates) {
+      const min = item['min-people'];
+      const max = item['max-people'];
+      for (let i = min; i <= max; i++) {
+        const personOption = document.createElement('option');
+        personOption.className = 'tour__option';
+        personOption.setAttribute('value', `${i}`);
+        personOption.textContent = personOption.value;
+        persons.push(personOption);
+      }
+      console.log(persons);
+      selectPerson.append(...persons);
+    }
+  });
+};
+
+export const choosePeople = () => {
   select.addEventListener('change', () => {
     const personOptions = selectPerson.querySelectorAll('.tour__option');
     personOptions.forEach(item => {
       item.remove();
     });
-
-    const tourDates = document.getElementById('tour__date').value;
-    const persons = [];
-    data.forEach(item => {
-      if (item.date === tourDates) {
-        const min = item['min-people'];
-        const max = item['max-people'];
-        for (let i = min; i <= max; i++) {
-          const personOption = document.createElement('option');
-          personOption.className = 'tour__option';
-          personOption.setAttribute('value', `${i}`);
-          personOption.textContent = personOption.value;
-          persons.push(personOption);
-        }
-        console.log(persons);
-        selectPerson.append(...persons);
-      }
+    fetchRequest(URL, {
+      method: 'get',
+      callback: renderPersons,
     });
   });
 };
 
-export const renderReservPersons = async () => {
-  const data = await loadTours();
+const renderReservPersons = (err, data) => {
+  if (err) {
+    console.warn(err, data);
+    tourForm.textContent = 'Что -то пошло не так, попробуйте еще раз';
+    return;
+  }
+  const personReservation = reservationPerson.
+    querySelectorAll('.reservation__option');
+  personReservation.forEach(item => {
+    item.remove();
+  });
+
+  const tourDates = document.getElementById('reservation__date').value;
+  const persons = [];
+  data.forEach(item => {
+    if (item.date === tourDates) {
+      const min = item['min-people'];
+      const max = item['max-people'];
+      for (let i = min; i <= max; i++) {
+        const personOption = document.createElement('option');
+        personOption.classList.add('tour__option', 'reservation__option');
+        personOption.setAttribute('value', `${i}`);
+        personOption.textContent = personOption.value;
+        persons.push(personOption);
+      }
+      reservationPerson.append(...persons);
+    }
+  });
+};
+
+export const chooseReservPeople = () => {
   reservationSelect.addEventListener('change', () => {
-    const personReservation = reservationPerson.
-      querySelectorAll('.reservation__option');
-    personReservation.forEach(item => {
-      item.remove();
-    });
-
-    const tourDates = document.getElementById('reservation__date').value;
-    const persons = [];
-    data.forEach(item => {
-      if (item.date === tourDates) {
-        const min = item['min-people'];
-        const max = item['max-people'];
-        for (let i = min; i <= max; i++) {
-          const personOption = document.createElement('option');
-          personOption.classList.add('tour__option', 'reservation__option');
-          personOption.setAttribute('value', `${i}`);
-          personOption.textContent = personOption.value;
-          persons.push(personOption);
-        }
-        reservationPerson.append(...persons);
-      }
+    fetchRequest(URL, {
+      method: 'get',
+      callback: renderReservPersons,
     });
   });
 };
 
-reservationForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const reservDate =
-  document.getElementById('reservation__date').value;
-  const reservPeople =
-  document.getElementById('reservation__people').value;
-  const reservName =
-  document.getElementById('reservation__name').value;
-  const reservContact =
-  document.getElementById('reservation__phone').value;
-
-  fetchRequest('https://jsonplaceholder.typicode.com/posts', {
-    method: 'POST',
-    body: {
-      title: reservDate,
-      body: reservPeople,
-    },
-     callback(error, data) {
-      if (error) {
-        console.warn(error, data);
-        reservationForm.textContent = 'Что-то пошло не так';
-      }
-      reservationForm.textContent =
-      `Заявка на ${reservDate} от ${reservName} 
-      принята. С вами свяжутся наши операторы`;
-    },
-    headers: {
-      'Content-Type': 'application/json',
-    },
+export const sendReservForm = () => {
+  reservationForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const reservDate =
+    document.getElementById('reservation__date').value;
+    const reservPeople =
+    document.getElementById('reservation__people').value;
+    const reservName =
+    document.getElementById('reservation__name').value;
+    fetchRequest('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      body: {
+        title: reservDate,
+        body: reservPeople,
+      },
+      callback(error, data) {
+        if (error) {
+          console.warn(error, data);
+          reservationForm.textContent = 'Что-то пошло не так';
+        } else {
+          reservationForm.textContent =
+        `Заявка на ${reservDate} от ${reservName} 
+        принята. С вами свяжутся наши операторы`;
+        }
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   });
-});
+};
 
+export const sendFooterForm = () => {
+  footerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const footerInput = document.querySelector('.footer__input').value;
+    fetchRequest('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      body: {
+        title: footerInput,
+      },
+      callback(error, data) {
+        if (error) {
+          console.warn(error, data);
+          footerForm.textContent = 'Что-то пошло не так';
+        } else {
+          footerForm.innerHTML =
+        `<h3> Ваша заявка успешно отправлена</h3>
+        <p style='border: 2px solid red'>Наши менеджеры свяжутся с<br>
+          вами  в течении 3-х рабочих дней</p>`;
+        }
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  });
+};
 
-export const getTotalAmount = async () => {
-  const data = await loadTours();
+const getTotalAmount = (err, data) => {
+  const dataReserv = document.querySelector('.reservation__data');
+  if (err) {
+    console.warn(err, data);
+    dataReserv.textContent = 'Что-то пошло не так, попробуйте еще раз';
+    return;
+  }
+  const tourDates = document.getElementById('reservation__date').value;
+  const tourPerson = document.getElementById('reservation__people').value;
+  const peoplesText = numWord(tourPerson, ['человек', 'человека', 'человек']);
+  dataReserv.textContent = '';
+  const priceReserv = document.querySelector('.reservation__price');
+  priceReserv.textContent = '₽';
+  data.forEach(item => {
+    if (item.date === tourDates) {
+      const price = item.price;
+      const totalPrice = price * tourPerson;
+      priceReserv.textContent = `${totalPrice}₽`;
+      dataReserv.textContent = `${tourDates}, ${tourPerson} ${peoplesText}`;
+    }
+  });
+};
+
+export const gettingTotalAmount = () => {
   reservationPerson.addEventListener('change', () => {
-    const tourDates = document.getElementById('reservation__date').value;
-    const tourPerson = document.getElementById('reservation__people').value;
-    const dataReserv = document.querySelector('.reservation__data');
-    const peoplesText = numWord(tourPerson, ['человек', 'человека', 'человек']);
-    dataReserv.textContent = '';
-    const priceReserv = document.querySelector('.reservation__price');
-    priceReserv.textContent = '₽';
-    data.forEach(item => {
-      if (item.date === tourDates) {
-        const price = item.price;
-        const totalPrice = price * tourPerson;
-        priceReserv.textContent = `${totalPrice}₽`;
-        dataReserv.textContent = `${tourDates}, ${tourPerson} ${peoplesText}`;
-      }
+    fetchRequest(URL, {
+      method: 'get',
+      callback: getTotalAmount,
     });
   });
 };
