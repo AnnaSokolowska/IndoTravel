@@ -1,4 +1,4 @@
-fetch('db.json');
+const URL = '/db.json';
 
 const select = document.querySelector('#tour__date');
 const dateOption = select.querySelectorAll('.tour__option');
@@ -33,6 +33,9 @@ personReservation.forEach(item => {
 });
 
 
+const reservationForm = document.querySelector('.reservation__form');
+console.log(reservationForm);
+
 const numWord = (value, words) => {
   value = Math.abs(value) % 100;
   const num = value % 10;
@@ -41,16 +44,43 @@ const numWord = (value, words) => {
   if (num === 1) return words[0];
   return words[2];
 };
+const fetchRequest = async (url, {
+  method = 'get',
+  callback,
+  body,
+  headers,
+}) => {
+  try {
+    const options = {
+      method,
+    };
+    if (body) options.body = JSON.stringify(body);
+    if (headers) options.headers = headers;
 
-const loadTours = async () => {
-  const result = await fetch('db.json');
-  const data = await result.json();
-  return data;
+    const response = await fetch(URL, options);
+
+    if (response.status < 200 || response.status >= 300) {
+      const data = await response.json();
+      if (callback) callback(null, data);
+      return;
+    }
+
+    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+  } catch (err) {
+    callback(err);
+  }
 };
 
 
-export const renderTours = async () => {
-  const data = await loadTours();
+export const renderTours = (err, data) => {
+  if (err) {
+    console.warn(err, data);
+    const h2 = document.createElement('h2');
+    h2.style.color = 'red';
+    h2.textContent = err;
+    document.body.append(h2);
+    return;
+  }
   const dates = data.map(item => {
     const tourOption = document.createElement('option');
     tourOption.className = 'tour__option';
@@ -60,6 +90,16 @@ export const renderTours = async () => {
   });
   select.append(...dates);
 };
+
+export const choose = () => {
+  select.addEventListener('click', () => {
+    fetchRequest(URL, {
+      method: 'get',
+      callback: renderTours,
+    });
+  });
+};
+
 
 export const renderReservTours = async () => {
   const data = await loadTours();
@@ -128,6 +168,39 @@ export const renderReservPersons = async () => {
     });
   });
 };
+
+reservationForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const reservDate =
+  document.getElementById('reservation__date').value;
+  const reservPeople =
+  document.getElementById('reservation__people').value;
+  const reservName =
+  document.getElementById('reservation__name').value;
+  const reservContact =
+  document.getElementById('reservation__phone').value;
+
+  fetchRequest('https://jsonplaceholder.typicode.com/posts', {
+    method: 'POST',
+    body: {
+      title: reservDate,
+      body: reservPeople,
+    },
+     callback(error, data) {
+      if (error) {
+        console.warn(error, data);
+        reservationForm.textContent = 'Что-то пошло не так';
+      }
+      reservationForm.textContent =
+      `Заявка на ${reservDate} от ${reservName} 
+      принята. С вами свяжутся наши операторы`;
+    },
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+});
+
 
 export const getTotalAmount = async () => {
   const data = await loadTours();
