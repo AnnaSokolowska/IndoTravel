@@ -1,3 +1,5 @@
+import showMadl from './modal.js';
+
 const URL = '/db.json';
 
 const select = document.querySelector('#tour__date');
@@ -35,6 +37,7 @@ personReservation.forEach(item => {
 const tourForm = document.querySelector('.tour__form');
 const reservationForm = document.querySelector('.reservation__form');
 const footerForm = document.querySelector('.footer__form');
+const btnReserv = document.querySelector('.reservation__button');
 
 
 const numWord = (value, words) => {
@@ -216,65 +219,6 @@ export const chooseReservPeople = () => {
   });
 };
 
-export const sendReservForm = () => {
-  reservationForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const reservDate =
-    document.getElementById('reservation__date').value;
-    const reservPeople =
-    document.getElementById('reservation__people').value;
-    const reservName =
-    document.getElementById('reservation__name').value;
-    fetchRequest('https://jsonplaceholder.typicode.com/posts', {
-      method: 'POST',
-      body: {
-        title: reservDate,
-        body: reservPeople,
-      },
-      callback(error, data) {
-        if (error) {
-          console.warn(error, data);
-          reservationForm.textContent = 'Что-то пошло не так';
-        } else {
-          reservationForm.textContent =
-        `Заявка на ${reservDate} от ${reservName} 
-        принята. С вами свяжутся наши операторы`;
-        }
-      },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  });
-};
-
-export const sendFooterForm = () => {
-  footerForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const footerInput = document.querySelector('.footer__input').value;
-    fetchRequest('https://jsonplaceholder.typicode.com/posts', {
-      method: 'POST',
-      body: {
-        title: footerInput,
-      },
-      callback(error, data) {
-        if (error) {
-          console.warn(error, data);
-          footerForm.textContent = 'Что-то пошло не так';
-        } else {
-          footerForm.innerHTML =
-        `<h3> Ваша заявка успешно отправлена</h3>
-        <p style='border: 2px solid red'>Наши менеджеры свяжутся с<br>
-          вами  в течении 3-х рабочих дней</p>`;
-        }
-      },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  });
-};
-
 const getTotalAmount = (err, data) => {
   const dataReserv = document.querySelector('.reservation__data');
   if (err) {
@@ -303,6 +247,74 @@ export const gettingTotalAmount = () => {
     fetchRequest(URL, {
       method: 'get',
       callback: getTotalAmount,
+    });
+  });
+};
+
+export const sendReservForm = () => {
+  reservationForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const totalAmount =
+    document.querySelector('.reservation__price').textContent;
+    const reservDate =
+    document.getElementById('reservation__date').value;
+    const reservPeople =
+    document.getElementById('reservation__people').value;
+    const peoplesText =
+    numWord(reservPeople, ['человек', 'человека', 'человек']);
+    const check =
+    await showMadl(reservDate, reservPeople, totalAmount, peoplesText);
+    console.log(check);
+    if (check === true) {
+      fetchRequest('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        body: {
+          title: reservDate,
+          body: reservPeople,
+        },
+        callback(error, data) {
+          if (error) {
+            console.warn(error, data);
+            reservationForm.textContent = 'Что-то пошло не так';
+          } else {
+            const selects = reservationForm.querySelectorAll('select');
+            selects.forEach(elem => elem.setAttribute('disabled', 'true'));
+            const inputs = reservationForm.querySelectorAll('input');
+            inputs.forEach(elem => elem.setAttribute('disabled', 'true'));
+            btnReserv.setAttribute('disabled', 'true');
+          }
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+  });
+};
+
+export const sendFooterForm = () => {
+  footerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const footerInput = document.querySelector('.footer__input').value;
+    fetchRequest('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      body: {
+        title: footerInput,
+      },
+      callback(error, data) {
+        if (error) {
+          console.warn(error, data);
+          footerForm.textContent = 'Что-то пошло не так';
+        } else {
+          footerForm.innerHTML =
+        `<h3> Ваша заявка успешно отправлена</h3>
+        <p style='border: 2px solid red'>Наши менеджеры свяжутся с<br>
+          вами  в течении 3-х рабочих дней</p>`;
+        }
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
   });
 };
