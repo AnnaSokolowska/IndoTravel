@@ -42,7 +42,15 @@ const showMadl = async (reservDate, reservPeople, totalAmount, peoplesText) => {
 
     btnConfirm.addEventListener('click', () => {
       overlay.remove();
-      resolve(true);
+      const reservSurname = document.getElementById('reservation__name').value;
+      const fioCheck = /^(?:[а-я]+\s){2,}(?:[а-я]+\s*)$/iu;
+      const goodChoice = reservSurname.match(fioCheck);
+
+      if (goodChoice !== null) {
+        resolve(true);
+      } else {
+        alert('Вы неверно заполнили ФИО, введите свои данные полностью');
+      }
     });
   });
 };

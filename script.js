@@ -7,6 +7,7 @@ import
 {choose, choosePeople, chooseReservPeople, reservChoose,
   gettingTotalAmount, sendReservForm, sendFooterForm}
   from './modules/fetch.js';
+import {surnameCheck, phoneCheck} from './modules/regexp.js';
 
 const init = () => {
   const datadeadline = setDataDedline();
@@ -19,6 +20,8 @@ const init = () => {
   gettingTotalAmount();
   sendReservForm();
   sendFooterForm();
+  surnameCheck();
+  phoneCheck();
 };
 
 init();

@@ -292,6 +292,7 @@ export const sendReservForm = () => {
   });
 };
 
+
 export const sendFooterForm = () => {
   footerForm.addEventListener('submit', (e) => {
     e.preventDefault();
